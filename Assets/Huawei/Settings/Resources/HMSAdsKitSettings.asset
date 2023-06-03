@@ -22,12 +22,20 @@ MonoBehaviour:
     - ShowBannerOnLoad
     - UnityBannerAdSizeType
     - BannerRefreshInterval
+    - BannerAdID
+    - InterstitialAdID
+    - RewardedAdID
+    - SplashAdID
     _values:
     - True
+    - False
     - True
     - True
-    - True
-    - True
+    - False
     - True
     - BANNER_SIZE_SMART
     - 60
+    - y1dt7es5m2
+    - j09y8cbjas
+    - b214vy9fzx
+    - n2hsa0zkaa

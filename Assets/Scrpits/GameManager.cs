@@ -147,7 +147,6 @@ public class GameManager : MonoBehaviour
         {
             skipRequest = true;
             AdsManager.Instance.ShowRewardedAd();
-            GameObject.Find("ReviveButton").GetComponent<Button>().interactable = false;
         }
     }
 
@@ -157,7 +156,6 @@ public class GameManager : MonoBehaviour
         {
             doubleRewardRequest = true;
             AdsManager.Instance.ShowRewardedAd();
-            GameObject.Find("DoubleGemButton").GetComponent<Button>().interactable = false;
         }
     }
 
@@ -165,16 +163,19 @@ public class GameManager : MonoBehaviour
     {
         if (skipRequest)
         {
+            GameObject.Find("SkipButton").GetComponent<Button>().interactable = false;
             LoadNextLevel();
         }
         else if(doubleRewardRequest)
         {
+            GameObject.Find("DoubleGemButton").GetComponent<Button>().interactable = false;
             DoubleGem();
         }
     }
 
     public void RestartButton()
     {
+        AdsManager.Instance.ShowInterstitialAd();
         Invoke("Restart", 1f);
     }
 
@@ -193,7 +194,6 @@ public class GameManager : MonoBehaviour
 
     void Restart()
     {
-        AdsManager.Instance.ShowInterstitialAd();
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 

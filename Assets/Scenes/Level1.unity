@@ -54483,7 +54483,8 @@ PrefabInstance:
       propertyPath: m_Name
       value: AdsManager
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 1816958350188426655, guid: 6a791e3326837754daaa64f22f65bf8b, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: 6a791e3326837754daaa64f22f65bf8b, type: 3}
 --- !u!222 &1922161348749029192
 CanvasRenderer:
