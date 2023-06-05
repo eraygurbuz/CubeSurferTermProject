@@ -16,9 +16,6 @@ public class IAPManager : MonoBehaviour
     List<InAppPurchaseData> consumablePurchaseRecord = new List<InAppPurchaseData>();
     List<InAppPurchaseData> activeNonConsumables = new List<InAppPurchaseData>();
 
-    [SerializeField]
-    private Button NoAdsButton;
-
     #region Singleton
 
     public static IAPManager Instance { get; private set; }
@@ -57,7 +54,7 @@ public class IAPManager : MonoBehaviour
     void Awake()
     {
         Singleton();
-        Screen.orientation = ScreenOrientation.Landscape;
+        Screen.orientation = ScreenOrientation.Portrait;
     }
 
     void Start()
@@ -76,12 +73,16 @@ public class IAPManager : MonoBehaviour
     }
 
 
-
-    public void PurchaseProduct(string productID)
+    public bool IsNoAdsPurchased()
     {
-        Debug.Log($"PurchaseProduct");
-
-        HMSIAPManager.Instance.PurchaseProduct(productID);
+        foreach (var item in activeNonConsumables)
+        {
+            if (item.ProductId == "NoAdsProduct")
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
 
@@ -114,6 +115,12 @@ public class IAPManager : MonoBehaviour
 
     }
 
+    public void PurchaseProduct(string productID)
+    {
+        Debug.Log($"PurchaseProduct");
+
+        HMSIAPManager.Instance.PurchaseProduct(productID);
+    }
 
     #region Callbacks
 
@@ -121,17 +128,15 @@ public class IAPManager : MonoBehaviour
     {
         Debug.Log($"OnBuyProductSuccess");
 
-        if (obj.InAppPurchaseData.ProductId == "removeads")
+        if (obj.InAppPurchaseData.ProductId == "NoAdsProduct")
         {
             IAPLog?.Invoke("Ads Removed!");
+            GameObject.FindObjectOfType<GameManager>().RemoveAds();
         }
-        else if (obj.InAppPurchaseData.ProductId == "coins100")
+        else if (obj.InAppPurchaseData.ProductId == "10KGems")
         {
-            IAPLog?.Invoke("coins100 Purchased!");
-        }
-        else if (obj.InAppPurchaseData.ProductId == "premium")
-        {
-            IAPLog?.Invoke("premium subscribed!");
+            IAPLog?.Invoke("10000 Gems Purchased!");
+            GameObject.FindObjectOfType<GameManager>().AddGems(10000);
         }
     }
 

@@ -11,8 +11,9 @@ public class GameManager : MonoBehaviour
     public TMPro.TextMeshProUGUI completeLevelTMP;
     public GameObject failLevelUI;
     public GameObject mainScreenUI;
-    public GameObject progressBarUI;
+    public GameObject inGameUI;
     public GameObject sliderUI;
+    public GameObject pauseMenuUI;
     public AnimationController animControl;
 
     public TMPro.TextMeshProUGUI gemCounterTMP;
@@ -29,6 +30,9 @@ public class GameManager : MonoBehaviour
     bool skipRequest = false;
     bool doubleRewardRequest = false;
 
+    //IAP
+    bool noAds = false;
+
     int totalGemCounter = 0;
 
     bool isLevelFinished = false;
@@ -38,9 +42,41 @@ public class GameManager : MonoBehaviour
 
     private void Awake()
     {
-        totalGemCounter = GameInfo.totalGems;
+        if (PlayerPrefs.HasKey("Level"))
+        {
+            currentLevel = PlayerPrefs.GetInt("Level");
+        }
+        else
+        {
+            PlayerPrefs.SetInt("Level", 1);
+            currentLevel = 1;
+        }
+        //this works for initial state
+        if (SceneManager.GetActiveScene().buildIndex != ((currentLevel - 1) % 5))
+        {
+            if (currentLevel % 5 != 0)
+                SceneManager.LoadScene((currentLevel - 1) % 5);
+            else
+                SceneManager.LoadScene(0);
+        }
+
+        if (PlayerPrefs.HasKey("Gems"))
+        {
+            totalGemCounter = PlayerPrefs.GetInt("Gems");
+        }
+        else
+        {
+            PlayerPrefs.SetInt("Gems", 0);
+            totalGemCounter = 0;
+        }
+        
+        if(IAPManager.Instance.IsNoAdsPurchased())
+        {
+            noAds = true;
+        }
+        
+        
         gemCounterTMP.SetText(totalGemCounter + "");
-        currentLevel = GameInfo.level + 1;
         progressBarTMP.SetText(currentLevel+"");
         if (currentLevel % 5 == 1)
         {
@@ -82,6 +118,9 @@ public class GameManager : MonoBehaviour
             levelTxt[3].SetText((currentLevel - 1) + "");
             levelTxt[4].SetText(currentLevel + "");
         }
+
+        if(!noAds)
+            AdsManager.Instance.ShowBannerAd();
     }
 
     public void StopLevel()
@@ -96,6 +135,7 @@ public class GameManager : MonoBehaviour
             isGameEnded = true;
             DisablePlayerInput();
             failLevelUI.SetActive(true);
+            inGameUI.SetActive(false);
             animControl.Death();
             Debug.Log("GAME OVER!");
         }
@@ -114,6 +154,7 @@ public class GameManager : MonoBehaviour
             completeLevelTMP.SetText("GREAT!\n" + multiplier + "X");
             completeLevelGemTMP.SetText(currentGemCounter * multiplier + "");
             completeLevelUI.SetActive(true);
+            inGameUI.SetActive(false);
         }
     }
 
@@ -132,7 +173,7 @@ public class GameManager : MonoBehaviour
         Debug.Log("Level Started!");
         sliderUI.SetActive(false);
         mainScreenUI.SetActive(false);
-        progressBarUI.SetActive(true);
+        inGameUI.SetActive(true);
         EnablePlayerInput();
         currentGemCounter = 0;
         currentMultiplier = 1;
@@ -175,15 +216,17 @@ public class GameManager : MonoBehaviour
 
     public void RestartButton()
     {
-        AdsManager.Instance.ShowInterstitialAd();
+        if(!noAds)
+            AdsManager.Instance.ShowInterstitialAd();
         Invoke("Restart", 1f);
     }
 
     public void NextButton()
     {   
         totalGemCounter += (currentGemCounter * currentMultiplier);
-        GameInfo.totalGems = totalGemCounter;
-        AdsManager.Instance.ShowInterstitialAd();
+        PlayerPrefs.SetInt("Gems", totalGemCounter);
+        if (!noAds)
+            AdsManager.Instance.ShowInterstitialAd();
         Invoke("LoadNextLevel", 1f);
     }
 
@@ -199,7 +242,7 @@ public class GameManager : MonoBehaviour
 
     public void LoadNextLevel()
     {
-        GameInfo.level++;
+        PlayerPrefs.SetInt("Level", currentLevel+1);
         if (currentLevel % 5 != 0)
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);//loads next scene on the build order
         else
@@ -228,5 +271,41 @@ public class GameManager : MonoBehaviour
         player.GetComponent<SwerveMovement>().EnableSwerveMove();
     }
 
+    public void PauseButton()
+    {
+        pauseMenuUI.SetActive(true);
+        Time.timeScale = 0f;
+    }
 
+    public void ResumeButton()
+    {
+        pauseMenuUI.SetActive(false);
+        Time.timeScale = 1;
+    }
+
+    //IAP Buttons
+    public void NoAdsButton()
+    {
+        IAPManager.Instance.PurchaseProduct("NoAdsProduct");
+    }
+    public void RemoveAds()
+    {
+        noAds = true;
+        AdsManager.Instance.HideBannerAd();
+    }
+
+    public void BuyGems(int amount)
+    {
+        if(amount == 10000)
+        {
+            IAPManager.Instance.PurchaseProduct("10KGems");
+        }
+    }
+
+
+    public void AddGems(int amount)
+    {
+        totalGemCounter += amount;
+        PlayerPrefs.SetInt("Gems", totalGemCounter);
+    }
 }

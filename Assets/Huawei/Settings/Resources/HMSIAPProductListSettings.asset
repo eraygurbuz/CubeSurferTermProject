@@ -15,7 +15,7 @@ MonoBehaviour:
   settings:
     _keys:
     - NoAdsProduct
-    - DoubleScore
+    - 10KGems
     _values:
     - NonConsumable
     - Consumable
